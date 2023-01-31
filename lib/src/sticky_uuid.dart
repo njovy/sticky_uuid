@@ -1,11 +1,14 @@
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sticky_uuid/src/utils/generator.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const _key = 'sticky_uuid';
+
 /// DeviceId that holds a secure storage for the device id.
 class StickyUuid {
-
-
   static final _instance = StickyUuid._internal();
 
   StickyUuid._internal();
@@ -25,13 +28,21 @@ class StickyUuid {
   }
 
   Future<String> _getOrPersistDeviceId() async {
+    if(Platform.isAndroid){
+      final pref = await SharedPreferences.getInstance();
+      final deviceId = pref.getString(_key);
+      if (deviceId?.isNotEmpty ?? false) {
+        return deviceId!;
+      }
+      final String newId = toHex(generate());
+      await pref.setString(_key, newId);
+      return newId;
+    }
     /// read a device id from a secure storage
-
-
-    final storage = FlutterSecureStorage(aOptions: AndroidOptions(encryptedSharedPreferences: true));
+    final storage = FlutterSecureStorage();
 
     final String? key = await storage.read(key: _key);
-    if(key?.isNotEmpty ?? false){
+    if (key?.isNotEmpty ?? false) {
       return key!;
     }
 
@@ -39,6 +50,5 @@ class StickyUuid {
     final String newId = toHex(generate());
     await storage.write(key: _key, value: newId);
     return newId;
-
   }
 }
