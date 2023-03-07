@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:android_id/android_id.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sticky_uuid/src/utils/generator.dart';
@@ -33,6 +34,11 @@ class StickyUuid {
       final deviceId = pref.getString(_key);
       if (deviceId?.isNotEmpty ?? false) {
         return deviceId!;
+      }
+      final androidId = await AndroidId().getId();
+      if(androidId?.isNotEmpty ?? false){
+        await pref.setString(_key, androidId!);
+        return androidId;
       }
       final String newId = toHex(generate());
       await pref.setString(_key, newId);
