@@ -35,10 +35,14 @@ class StickyUuid {
       if (deviceId?.isNotEmpty ?? false) {
         return deviceId!;
       }
-      final androidId = await AndroidId().getId();
-      if(androidId?.isNotEmpty ?? false){
-        await pref.setString(_key, androidId!);
-        return androidId;
+      try {
+        final androidId = await AndroidId().getId();
+        if (androidId?.isNotEmpty ?? false) {
+          await pref.setString(_key, androidId!);
+          return androidId;
+        }
+      }catch(_){
+
       }
       final String newId = toHex(generate());
       await pref.setString(_key, newId);
